@@ -34,24 +34,33 @@ public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
 
         foreach (var entityEntry in entries)
         {
-            if (entityEntry.State == EntityState.Added)
+            switch (entityEntry.State)
             {
-                entityEntry.Property(o => o.CreatedOnUtc).CurrentValue = DateTime.UtcNow;
-                entityEntry.Property(o => o.CreatedBy).CurrentValue = applicationUser.Value;
-            }
-
-            if (entityEntry.State == EntityState.Modified)
-            {
-                if (entityEntry.Property(o => o.IsDelete).CurrentValue && 
-                    !entityEntry.Property(o => o.IsDelete).OriginalValue)
-                {
+                case EntityState.Modified when entityEntry.Property(o => o.IsDelete).CurrentValue &&
+                                               !entityEntry.Property(o => o.IsDelete).OriginalValue:
                     entityEntry.Property(o => o.DeletedOnUtc).CurrentValue = DateTime.UtcNow;
                     entityEntry.Property(o => o.DeletedBy).CurrentValue = applicationUser.Value;
                     continue;
-                }
                 
-                entityEntry.Property(o => o.ModifiedOnUtc).CurrentValue = DateTime.UtcNow;
-                entityEntry.Property(o => o.ModifiedBy).CurrentValue = applicationUser.Value;
+                case EntityState.Modified:
+                    entityEntry.Property(o => o.ModifiedOnUtc).CurrentValue = DateTime.UtcNow;
+                    entityEntry.Property(o => o.ModifiedBy).CurrentValue = applicationUser.Value;
+                    break;
+                
+                case EntityState.Added:
+                    entityEntry.Property(o => o.CreatedOnUtc).CurrentValue = DateTime.UtcNow;
+                    entityEntry.Property(o => o.CreatedBy).CurrentValue = applicationUser.Value;
+                    break;
+                
+                case EntityState.Deleted:
+                    entityEntry.Property(o => o.DeletedOnUtc).CurrentValue = DateTime.UtcNow;
+                    entityEntry.Property(o => o.DeletedBy).CurrentValue = applicationUser.Value;
+                    entityEntry.Property(o => o.IsDelete).CurrentValue = true;
+                    entityEntry.State = EntityState.Modified;
+                    break;
+
+                default:
+                    continue;
             }
         }
 

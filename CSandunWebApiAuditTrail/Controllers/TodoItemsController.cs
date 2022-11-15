@@ -20,7 +20,6 @@ public class TodoItemsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetTodoItems()
     {
-
         return await _context.TodoItems
             .Select(x => ItemToDTO(x))
             .ToListAsync();
@@ -30,7 +29,7 @@ public class TodoItemsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<TodoItemDto>> GetTodoItem(long id)
     {
-         var todoItem = await _context.TodoItems.FirstOrDefaultAsync(o => o.Id == id);
+        var todoItem = await _context.TodoItems.FirstOrDefaultAsync(o => o.Id == id);
 
         if (todoItem == null)
         {
@@ -102,8 +101,13 @@ public class TodoItemsController : ControllerBase
             return NotFound();
         }
 
-        todoItem.IsDelete = true;
-        _context.TodoItems.Update(todoItem);
+
+        // 📦 🎉 first way to soft delete perform as a modification  🎉
+        //  todoItem.IsDelete = true;
+        // _context.TodoItems.Update(todoItem);
+
+        // 🎉 second way to soft delete - In abstract manner this handle as a modification changing state to modified 🎉
+        _context.TodoItems.Remove(todoItem);
         await _context.SaveChangesAsync();
 
         return NoContent();
