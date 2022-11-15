@@ -57,6 +57,7 @@ public class TodoItemsController : ControllerBase
 
         todoItem.Name = todoItemDTO.Name;
         todoItem.IsComplete = todoItemDTO.IsComplete;
+        todoItem.IsDelete = todoItemDTO.IsDelete;
 
         try
         {
@@ -77,10 +78,11 @@ public class TodoItemsController : ControllerBase
         var todoItem = new TodoItem
         {
             IsComplete = todoItemDTO.IsComplete,
-            Name = todoItemDTO.Name
+            Name = todoItemDTO.Name,
+            IsDelete = todoItemDTO.IsDelete
         };
 
-        _context.TodoItems.Add(todoItem);
+        await _context.TodoItems.AddAsync(todoItem);
         await _context.SaveChangesAsync();
 
         return CreatedAtAction(
@@ -117,6 +119,7 @@ public class TodoItemsController : ControllerBase
         {
             Id = todoItem.Id,
             Name = todoItem.Name,
-            IsComplete = todoItem.IsComplete
+            IsComplete = todoItem.IsComplete,
+            IsDelete = todoItem.IsDelete
         };
 }
