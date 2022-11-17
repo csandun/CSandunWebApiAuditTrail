@@ -29,13 +29,18 @@ public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
             return base.SavingChangesAsync(eventData, result, cancellationToken);
         }
 
-        // track auditable changes Added / Modified states 
+        // track auditable changes Added / Modified / Deleted  states 
         var entries = dbContext.ChangeTracker.Entries<IAuditableEntity>();
 
         foreach (var entityEntry in entries)
         {
             switch (entityEntry.State)
             {
+                case EntityState.Added:
+                    entityEntry.Property(o => o.CreatedOnUtc).CurrentValue = DateTime.UtcNow;
+                    entityEntry.Property(o => o.CreatedBy).CurrentValue = applicationUser.Value;
+                    break;
+                
                 case EntityState.Modified when entityEntry.Property(o => o.IsDelete).CurrentValue &&
                                                !entityEntry.Property(o => o.IsDelete).OriginalValue:
                     entityEntry.Property(o => o.DeletedOnUtc).CurrentValue = DateTime.UtcNow;
@@ -47,11 +52,6 @@ public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
                     entityEntry.Property(o => o.ModifiedBy).CurrentValue = applicationUser.Value;
                     break;
                 
-                case EntityState.Added:
-                    entityEntry.Property(o => o.CreatedOnUtc).CurrentValue = DateTime.UtcNow;
-                    entityEntry.Property(o => o.CreatedBy).CurrentValue = applicationUser.Value;
-                    break;
-                
                 case EntityState.Deleted:
                     entityEntry.Property(o => o.DeletedOnUtc).CurrentValue = DateTime.UtcNow;
                     entityEntry.Property(o => o.DeletedBy).CurrentValue = applicationUser.Value;
@@ -59,6 +59,12 @@ public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
                     entityEntry.State = EntityState.Modified;
                     break;
 
+                case EntityState.Detached:
+                    break;
+                
+                case EntityState.Unchanged:
+                    break;
+                
                 default:
                     continue;
             }
