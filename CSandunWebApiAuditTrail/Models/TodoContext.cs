@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Audit.EntityFramework;
+using CSandunWebApiAuditTrail.DbContextInterceptors;
+using Microsoft.EntityFrameworkCore;
 
 namespace CSandunWebApiAuditTrail.Models;
 
-public class TodoContext : DbContext
+public class TodoContext: DbContext
 {
     public TodoContext(DbContextOptions<TodoContext> options)
         : base(options)
@@ -10,6 +12,16 @@ public class TodoContext : DbContext
     }
 
     public DbSet<TodoItem> TodoItems { get; set; } = null!;
+
+    public DbSet<AuditLog> AuditLogs { get; set; }
+
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+       
+       // optionsBuilder.AddInterceptors(new AuditSaveChangesInterceptor());
+        base.OnConfiguring(optionsBuilder);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

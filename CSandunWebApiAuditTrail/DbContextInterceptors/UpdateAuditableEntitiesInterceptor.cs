@@ -14,8 +14,7 @@ public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
     {
         _userMockService = userMockService;
     }
-
-
+    
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
         InterceptionResult<int> result,
         CancellationToken cancellationToken = new CancellationToken())
@@ -69,6 +68,7 @@ public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
                     continue;
             }
         }
+        
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }

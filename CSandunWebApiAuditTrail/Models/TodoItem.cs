@@ -1,4 +1,6 @@
-﻿namespace CSandunWebApiAuditTrail.Models;
+﻿using Audit.EntityFramework;
+
+namespace CSandunWebApiAuditTrail.Models;
 
 public class TodoItem: IAuditableEntity
 {
@@ -9,11 +11,17 @@ public class TodoItem: IAuditableEntity
     // Soft delete capability
     public bool IsDelete { get; set; }
     
+    [AuditIgnore]
     //audit capability
     public Guid CreatedBy { get; set; }
+    [AuditIgnore]
     public DateTime CreatedOnUtc { get; set; }
+    [AuditIgnore]
     public Guid? ModifiedBy { get; set; }
+    [AuditIgnore]
     public DateTime? ModifiedOnUtc { get; set; }
+    [AuditIgnore]
     public Guid? DeletedBy { get; set; }
+    [AuditIgnore]
     public DateTime? DeletedOnUtc { get; set; }
 }
